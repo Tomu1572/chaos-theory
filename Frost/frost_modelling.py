@@ -73,12 +73,17 @@ class Application:
             if (self.X > self.maxX):
                 self.maxX = self.X
 
-            if (self.Y > self.minY):
+            if (self.Y < self.minY):
+                self.minY = self.Y
+                
+            if (self.Y > self.maxY):
                 self.maxY = self.Y
 
             # Modify the domain.
             self.domainMinX = max([self.minX - self.padSize, 1])
             self.domainMaxX = min([self.maxX + self.padSize, self.width - 1])
+            self.domainMinY = max([self.minY - self.padSize, 1])
+            self.domainMaxY = min([self.maxY + self.padSize, self.height - 1])
 
         else:
             self.updateFlag = False
@@ -87,14 +92,28 @@ class Application:
     def on_render(self):
         # Update pixel array.
         if self.updateFlag:
-            self.pixelArray[self.X, self.Y] = 0xFF0000
+            self.pixelArray[self.X, self.Y] = self.crystalColour
 
             # Update display.
             pygame.display.update()
 
             # Reset the updated flag and random walk.
             self.updateFlag = False
-            self.X, self.Y = self.startX, self.startY
+            
+            # Select one of the four sides of the domain to start from.
+            newSide = random.choice((1,2,3,4))
+            if (newSide == 1):
+                self.X = self.domainMinX
+                self.Y = int(random.uniform(self.domainMinY, self.domainMaxY))
+            elif (newSide == 2):
+                self.X = int(random.uniform(self.domainMinX, self.domainMaxX))
+                self.Y = self.domainMinY
+            elif (newSide == 3):
+                self.X = self.domainMaxX
+                self.Y = int(random.uniform(self.domainMinY, self.domainMaxY))
+            else:
+                self.X = int(random.uniform(self.domainMinX, self.domainMaxX))
+                self.Y = self.domainMaxY
 
     def on_execute(self):
         if self.on_init() == False:
